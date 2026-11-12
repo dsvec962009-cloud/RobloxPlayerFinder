@@ -1,3 +1,4 @@
+
 name: Build APK
 
 on:
@@ -36,19 +37,28 @@ jobs:
           unzip -q tools.zip
           mv cmdline-tools "$SDK/cmdline-tools/latest"
 
+          mkdir -p "$SDK/tools/bin"
+
           echo "ANDROID_HOME=$SDK" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$SDK" >> $GITHUB_ENV
+          echo "ANDROIDSDK=$SDK" >> $GITHUB_ENV
           echo "$SDK/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$SDK/tools/bin" >> $GITHUB_PATH
           echo "$SDK/platform-tools" >> $GITHUB_PATH
 
-          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" --licenses || true
+          ln -sf "$SDK/cmdline-tools/latest/bin/sdkmanager" "$SDK/tools/bin/sdkmanager"
 
-          "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" \
+          yes | "$SDK/tools/bin/sdkmanager" --sdk_root="$SDK" --licenses || true
+
+          "$SDK/tools/bin/sdkmanager" --sdk_root="$SDK" \
             "platform-tools" \
             "platforms;android-35" \
             "build-tools;35.0.0"
 
-          test -x "$SDK/build-tools/35.0.0/aidl"
+          ln -sf "$SDK/build-tools/35.0.0/aidl" "$SDK/tools/bin/aidl"
+
+          test -x "$SDK/tools/bin/sdkmanager"
+          test -x "$SDK/tools/bin/aidl"
 
       - name: Install Buildozer
         run: |
